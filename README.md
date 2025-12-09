@@ -1,27 +1,29 @@
-# Implementação do Padrão de Projeto:  Memento
+# Implementação do Padrão de Projeto:  Proxy
 
-O Padrão Memento é um padrão de projeto comportamental que permite salvar e restaurar o estado anterior de um objeto sem revelar os detalhes de sua implementação. Isso promove o encapsulamento e simplifica a estrutura do objeto original (Originator).
+O Padrão Proxy é um padrão de projeto estrutural que tem como objetivo fornecer um substituto ou intermediário para outro objeto. O Proxy controla o acesso ao objeto real, permitindo que se execute algo antes ou depois que a requisição chegue ao objeto principal.
 
-Este padrão é ideal para cenários que exigem funcionalidades como "desfazer" (undo) ou o rastreamento de um histórico de transações, como:
+Este padrão é ideal para cenários onde se deseja adicionar uma camada de controle, como:
 
-- Editores de texto ou imagem: Para reverter ações do usuário.
-- Assistentes de instalação (wizards): Para voltar a um passo anterior.
-- Jogos: Para salvar o progresso do jogador (checkpoints).
-- Gerenciamento de transações: Para reverter uma operação em caso de falha.
+- Controle de Acesso (Protection Proxy): Verificar permissões antes de executar uma operação sensível.
+- Carregamento Sob Demanda (Virtual Proxy): Adiar a criação e carregamento de um objeto custoso até o momento em que ele é realmente necessário (Lazy Loading).
+- Registro de Log (Logging Proxy): Registrar todas as chamadas ao objeto real.
+
 
 ## Cenário Aplicado: Controle de Acesso a Documentos Confidenciais
-Para esta implementação, foi escolhido o cenário do gerenciamento do ciclo de vida de um pedido em um sistema de e-commerce. O objetivo é rastrear as mudanças de estado de um Pedido (Criado, Aguardando Pagamento, etc.) e permitir a restauração para um estado anterior, se necessário.
+Para esta implementação, foi escolhido o cenário de Gestão de Documentos em um sistema. O objetivo é proteger o acesso ao conteúdo completo de um documento e garantir que o documento real (que pode ser custoso para carregar de um repositório) só seja instanciado quando estritamente necessário.
 
-Este cenário se encaixa perfeitamente no Padrão Memento, onde:
-- O Pedido é o objeto Originator, cujo estado desejamos salvar.
-- A interface PedidoEstado atua como o Memento, armazenando uma "fotografia" do estado do pedido em um determinado momento.
-- A própria classe Pedido também assume o papel de Caretaker (Zelador), mantendo um histórico de Mementos (estados) em uma lista, sem precisar conhecer os detalhes internos de cada estado.
+Este cenário é um exemplo clássico do Padrão Proxy, onde:
+- Um Documento é o objeto real (Real Subject) que contém dados sensíveis.
+- Um DocumentoProxy é o substituto (Proxy) que controla o acesso e gerencia o carregamento.
+- A interface IDocumento é o Subject que define a operação comum.
+
+O objetivo é permitir que qualquer usuário obtenha os metadados do documento rapidamente, mas apenas usuários com permissão de administrador possam acessar o conteúdo completo, garantindo que o objeto Documento só seja carregado do repositório uma única vez e apenas quando uma de suas operações for chamada.
 
 Os componentes principais do padrão, adaptados ao cenário, são:
-- **Originator (Pedido):** A classe principal que possui um estado interno e cujo histórico queremos salvar. Ela cria os Mementos e os utiliza para restaurar seu estado
-- **Memento (PedidoEstado):** Uma interface que representa o estado salvo. As classes concretas (PedidoEstadoCriado, PedidoEstadoCancelado, etc.) implementam essa interface e contêm a lógica de transição de estado
-- **Caretaker (Pedido):**  A classe Pedido também gerencia o histórico de Mementos. Ela é responsável por guardar e restaurar os estados do Originator
-
+- **Subject (IDocumento):**  Define a interface comum para o Real Subject e o Proxy
+- **Real Subject (Documento):** O objeto que contém a lógica de negócio principal e os dados sensíveis. Sua instanciação é adiada
+- **Proxy (DocumentoProxy):** Mantém uma referência ao Real Subject e implementa o controle de acesso e o carregamento sob demanda
+- **Cliente (Main/Testes):** Utiliza a interface IDocumento para interagir com o Proxy, sem se preocupar com a lógica de controle ou carregamento
 
 ### Estrutura do Projeto
 O projeto foi organizado utilizando a estrutura padrão do Maven.
@@ -29,21 +31,19 @@ O projeto foi organizado utilizando a estrutura padrão do Maven.
 ```
 ├──pom.xml
 └──src/
-    ├── main/java/padroescomportamentais/memento/
-    │   └── Pedido.java             
-    │   └── PedidoEstado.java        
-    │   └── PedidoEstadoAguardandoPagamento.java          
-    │   └── PedidoEstadoCancelado.java                  
-    │   └── PedidoEstadoCriado.java 
-    │   └── PedidoEstadoEmTransporte.java       
-    │   └── PedidoEstadoEntregue.java
-    │   └── PedidoEstadoPagamentoAprovado.java                                                      
-    └── test/java/padroescomportamentais/memento/
-        └── PedidoTest.java  
+    ├── main/java/padroesestruturais/proxy/
+    │   └── Documento.java             
+    │   └── DocumentoProxy.java        
+    │   └── IDocumento.java          
+    │   └── Main.java                  
+    │   └── RepositorioDocumentos.java 
+    │   └── Usuario.java                                                             
+    └── test/java/padroesestruturais/proxy/
+        └── DocumentoProxyTest.java  
 ```
 
 ### Diagrama
-![Diagrama Memento](diagrama_proxy.png)
+![Diagrama Proxy](diagrama_proxy.png)
 
 ### Tecnologias Utilizadas
 - Java 11: Linguagem de programação principal.
